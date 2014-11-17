@@ -66,6 +66,21 @@ analysisApp.controller('body', function($scope) {
 				'top':0,
 				'width':0,
 				'height':0
+			},
+
+			// the position on the canvas
+			'element': {
+				'left':0,
+				'top':0,
+				'width':0,
+				'height':0,
+				
+				'header': {
+					'left':0,
+					'top':0,
+					'width':0,
+					'height':0
+				}
 			}
 		}
 	];
@@ -81,6 +96,21 @@ analysisApp.controller('body', function($scope) {
 				'top':0,
 				'width':0,
 				'height':0
+			},
+			
+			// the position on the canvas
+			'element': {
+				'left':0,
+				'top':0,
+				'width':0,
+				'height':0,
+				
+				'header': {
+					'left':0,
+					'top':0,
+					'width':0,
+					'height':0
+				}
 			}
 		}
 	);
@@ -90,8 +120,30 @@ analysisApp.controller('body', function($scope) {
 			'location': 'Helsinki',
 			'description': 'Tekniikan laitos',
 			'contact': $scope.contacts[0],
-			'requirements': [$scope.services[0],$scope.services[1]] // add service & system requirements here (list of services)
-		}
+			'requirements': [$scope.services[0],$scope.services[1]], // add service & system requirements here (list of services)
+			
+			// the position on the canvas
+			'element': {
+				'left':0,
+				'top':0,
+				'width':0,
+				'height':0
+			}
+		},
+		{
+			'location': 'Tampere',
+			'description': 'Höpölaitos',
+			'contact': $scope.contacts[0],
+			'requirements': [$scope.services[1]], // add service & system requirements here (list of services)
+			
+			// the position on the canvas
+			'element': {
+				'left':0,
+				'top':0,
+				'width':0,
+				'height':0
+			}
+		},
 	];
 	
 	$scope.incidents = [
@@ -121,36 +173,24 @@ analysisApp.controller('body', function($scope) {
 		}
 	);
 	
-	function updateServices() {
-		// create demo services
-		/*
-		var el = {
-			'x':Math.floor(Math.random()*(canvas.width+1)),
-			'y':Math.floor(Math.random()*($scope.constants.services.max_height)+$scope.constants.services.start_y),
-			'vx':(Math.random()*0.4 - 0.2),
-			'vy':(Math.random()*0.4 - 0.2),
-			'r':10,
-			'destroy':false
-		};
-		
-		$scope.services.push(el);
-		*/
-		
-		// this is basically demo shit
-		/*
-		for(var i = 0; i < $scope.services.length; i++) {
-			$scope.services[i].x += $scope.services[i].vx;
-			$scope.services[i].y += $scope.services[i].vy;
-		
-			// check view limits
-			var middle_x = (canvas.width/2);
-			var middle_y = ($scope.constants.services.max_height/2)+$scope.constants.services.start_y;
-			if(Math.abs(middle_x - $scope.services[i].x) > middle_x || Math.abs(middle_y - $scope.services[i].y) > ($scope.constants.services.max_height/2)) {
-				$scope.services[i].destroy = true;
-			}
+	function updateOwnSystems() {
+		var screen_width_per_system = canvas.width / $scope.ownSystems.length;
+		var screen_height_per_system = $scope.constants.ownSystems.max_height;
+		var current_x = 0;
+		var current_y = $scope.constants.ownSystems.start_y; 
+
+		// update own system positions
+		for(var i = 0; i < $scope.ownSystems.length; i++) {
+			$scope.ownSystems[i].element.left = current_x;
+			$scope.ownSystems[i].element.top = current_y;
+			$scope.ownSystems[i].element.width = screen_width_per_system;
+			$scope.ownSystems[i].element.height = screen_height_per_system;
+			
+			current_x += screen_width_per_system;
 		}
-		*/
-		
+	}
+	
+	function updateServices() {
 		// remove services that were marked to be destroyed
 		for(var i = $scope.services.length; i > 0; i--) {
 			if($scope.services[i-1].destroy) {
@@ -174,23 +214,18 @@ analysisApp.controller('body', function($scope) {
 	}
 	
 	function drawOwnSystems() {
-		var screen_width_per_system = canvas.width / $scope.ownSystems.length;
-		var screen_height_per_system = $scope.constants.ownSystems.max_height;
-		var current_x = 0;
-		var current_y = $scope.constants.ownSystems.start_y; 
-		
 		// system styling
 		ctx.fillStyle = '#FF0000';
 		ctx.lineWidth = 3;
 		ctx.strokeStyle = '#00FF00';
 		
 		for(var i = 0; i < $scope.ownSystems.length; i++) {
+			var system = $scope.ownSystems[i];
+			
 			ctx.beginPath();
-			ctx.rect(current_x,current_y,screen_width_per_system,screen_height_per_system);
+			ctx.rect(system.element.left, system.element.top, system.element.width, system.element.height);
 			ctx.fill();
 			ctx.stroke();
-			
-			current_x += screen_width_per_system;
 		}
 	}
 	
@@ -266,30 +301,54 @@ analysisApp.controller('body', function($scope) {
 			
 			current_x += screen_width_per_service;
 		}
-		
-		/*
-		// demo bullshit
-		if($scope.serviceAmount != undefined) {
-		if($scope.serviceAmount != null) {
-			// draw services
-			for(var i = 0; i < $scope.services.length; i++) {		
-				var el = $scope.services[i];
-				ctx.beginPath();
-				ctx.arc(el.x,el.y,el.r,0,2*Math.PI);
-				ctx.fillStyle = "#ccddff";
-				ctx.fill();
-				ctx.lineWidth = 1;
-				ctx.strokeStyle = "#666666";
-				ctx.closePath();
-				ctx.stroke();
-			}
-		}
-		}
-		*/
 	}
 	
 	function drawIncidents() {
-		
+		for(var i = 0; i < $scope.incidents.length; i++) {
+			var incident = $scope.incidents[i];
+			
+			for(var j = 0; j < $scope.services.length; j++) {
+				if($scope.services[j]==incident.affectedSystem) {
+					
+				}
+			}
+			
+			for(var j = 0; j < $scope.ownSystems.length; j++) {
+				if($scope.ownSystems[j]==incident.affectedSystem) {
+					ctx.strokeStyle = '#000000';
+					
+					ctx.translate(0,0);
+					
+					ctx.beginPath();
+					ctx.moveTo(0,-10);
+					ctx.lineTo(5,0);
+					ctx.lineTo(0,10);
+					ctx.lineTo(-5,0);
+					ctx.lineTo(0,-10);
+					ctx.stroke();
+					
+					// we translated the canvas to fit the incident context
+					// we reset the transform matrix so nothing funny happens :)
+					ctx.setTransform(1,0,0,1,0,0);
+				}
+			}
+			
+			/*
+			// incident object structure
+			{
+				'description':'Power outage',
+				'occurred': new Date(2014,11,5,9,0,0,0),
+				'affectedSystem': $scope.ownSystems[0],
+				//'magnitude':5,	// this could be a value between 0-9 or something
+				//'duration':72, 	// in hours
+				//'trend':0, 		// value from [-1,0,1]
+				//'effect':'', 		// descriptive or numeral?
+				'contact':$scope.ownSystems[0].contact,
+				'icon':'img/icon_power_outage'
+			}
+			*/
+			
+		}
 	}
 	
 	function mainLoop() {
@@ -302,6 +361,7 @@ analysisApp.controller('body', function($scope) {
 		ctx.fillRect(0,0,canvas.width,canvas.height);
 		
 		// update services and incidents
+		updateOwnSystems();
 		updateServices();
 		
 		// draw elements
